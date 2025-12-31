@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人身保險業務員模擬測驗 - 保險實務</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        /* 全局背景：輕盈的淺橘色調 */
+        body { 
+            background-color: #fcf6f2; 
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            margin: 0; padding: 10px;
+            display: flex; justify-content: center;
+            -webkit-user-select: none; user-select: none;
+        }
+
+        /* 試卷容器：左側暖橙飾條 */
+        .paper {
+            background-color: #ffffff;
+            width: 100%; max-width: 600px;
+            min-height: 95vh;
+            padding: 40px 25px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            border-left: 10px solid #d35400; /* 暖橙色飾條 */
+            border-radius: 8px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* 標題區 */
+        .exam-header {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+        .exam-title { font-size: 1.4rem; font-weight: bold; color: #d35400; margin: 0 0 5px 0; }
+        .exam-subtitle { font-size: 1.1rem; color: #666; font-weight: 500; }
+
+        /* 章節標籤 */
+        #chapter-tag {
+            display: inline-block;
+            background-color: #fdf2e9;
+            color: #d35400;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 1px solid #fadbd8;
+        }
+
+        /* 題目區 */
+        .question-section { min-height: 150px; margin-bottom: 10px; }
+        #question-content { 
+            white-space: pre-wrap; font-size: 1.25rem; line-height: 1.75; color: #333; 
+        }
+
+        /* 選項按鈕區 */
+        .answer-sheet {
+            margin-top: 30px;
+            border-top: 2px solid #fdf2e9;
+            padding-top: 30px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+        }
+
+        /* 暖橙 3D 按鈕 */
+        .opt-circle {
+            width: 65px; height: 65px;
+            border: 2px solid #d35400;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem; font-weight: bold; color: #d35400;
+            cursor: pointer; background: #fff;
+            margin: auto;
+            box-shadow: 0 5px #edbb99;
+            transition: all 0.1s;
+            position: relative; top: 0;
+        }
+        .opt-circle:active { box-shadow: 0 1px #edbb99; top: 4px; background: #fffcfb; }
+
+        /* 答題回饋文字 */
+        #result-text { text-align: center; font-size: 1.3rem; font-weight: bold; margin-top: 25px; min-height: 35px; }
+        .msg-correct { color: #0077cc; } /* 正確仍保持專業藍 */
+        .msg-wrong { color: #e63946; }   /* 錯誤仍保持警示紅 */
+
+        /* 解析區塊：位於結果文字下方 */
+        #analysis-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fffaf5;
+            border-left: 4px solid #d35400;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+        }
+        .analysis-label { font-weight: bold; color: #d35400; margin-bottom: 5px; display: block; }
+
+        /* 下一題按鈕 */
+        #next-btn {
+            display: none; width: 100%; max-width: 240px; margin: 30px auto 0; padding: 15px;
+            background: #d35400; color: white; border: none; font-size: 1.1rem; 
+            font-weight: bold; cursor: pointer; text-align: center; border-radius: 4px;
+            box-shadow: 0 4px #a04000; transition: 0.1s; position: relative; top: 0;
+        }
+        #next-btn:active { box-shadow: 0 0px; top: 4px; }
+
+        /* 狀態色 */
+        .correct-mark { border-color: #0077cc !important; color: #0077cc !important; background-color: #f0f7ff !important; box-shadow: none !important; top: 4px !important; }
+        .wrong-mark { border-color: #e63946 !important; color: #e63946 !important; background-color: #fff5f5 !important; box-shadow: none !important; top: 4px !important; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+
+<div class="paper">
+    <div class="exam-header">
+        <div class="exam-title">人身保險業務員模擬測驗</div>
+        <div class="exam-subtitle">- 保險實務</div>
+    </div>
+
+    <div id="chapter-tag">載入中...</div>
+
+    <div class="question-section">
+        <div id="question-content">正在連線至實務題庫...</div>
+    </div>
+
+    <div class="answer-sheet">
+        <div class="opt-circle" onclick="submitChoice('1', this)">1</div>
+        <div class="opt-circle" onclick="submitChoice('2', this)">2</div>
+        <div class="opt-circle" onclick="submitChoice('3', this)">3</div>
+        <div class="opt-circle" onclick="submitChoice('4', this)">4</div>
+    </div>
+
+    <div id="result-text"></div>
+
+    <div id="analysis-box">
+        <span class="analysis-label">【實務解析】</span>
+        <div id="analysis-content"></div>
+    </div>
+
+    <div style="text-align: center;">
+        <button id="next-btn" onclick="nextQuestion()">下一題 (NEXT)</button>
+    </div>
+    
+    <div style="margin-top: 60px; text-align: center; color: #ccc; font-size: 0.8rem;">
+        INSURANCE PRACTICE MOCK EXAM ・ 僅供學習參考
+    </div>
+</div>
+
+<script>
+    // 已串接保險實務 CSV 網址
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRCn3ZGXRrkqyP8MIMVakrzGCPXj-e9tDoe1JtMrdvMXStvCc0EDq0AoNIOFnWrbJCmmcmMCnOvIvT-/pub?gid=799459313&single=true&output=csv';
+    
+    let quizBank = [];
+    let currentQuiz = null;
+
+    Papa.parse(csvUrl, {
+        download: true,
+        header: true,
+        complete: function(results) {
+            quizBank = results.data.filter(row => row.正確答案 && row.題目內容);
+            if (quizBank.length > 0) nextQuestion();
+        }
+    });
+
+    function nextQuestion() {
+        currentQuiz = quizBank[Math.floor(Math.random() * quizBank.length)];
+        document.getElementById('chapter-tag').innerText = currentQuiz.章節 || "綜合測驗";
+        document.getElementById('question-content').innerText = currentQuiz.題目內容;
+        document.getElementById('result-text').innerText = "";
+        document.getElementById('next-btn').style.display = "none";
+        document.getElementById('analysis-box').style.display = "none";
+        
+        document.querySelectorAll('.opt-circle').forEach(btn => {
+            btn.className = 'opt-circle';
+            btn.style.pointerEvents = 'auto';
+        });
+    }
+
+    function submitChoice(userChoice, element) {
+        const correctAnswer = currentQuiz.正確答案.toString().trim();
+        const resultDiv = document.getElementById('result-text');
+        const analysisBox = document.getElementById('analysis-box');
+        const analysisContent = document.getElementById('analysis-content');
+        
+        document.querySelectorAll('.opt-circle').forEach(btn => btn.style.pointerEvents = 'none');
+
+        if (userChoice === correctAnswer) {
+            element.classList.add('correct-mark');
+            resultDiv.innerHTML = '<span class="msg-correct">✓ 正確 (Correct)</span>';
+        } else {
+            element.classList.add('wrong-mark');
+            resultDiv.innerHTML = `<span class="msg-wrong">✕ 錯誤（正確答案：${correctAnswer}）</span>`;
+        }
+
+        if (currentQuiz.解析 && currentQuiz.解析.trim() !== "") {
+            analysisContent.innerText = currentQuiz.解析;
+            analysisBox.style.display = "block";
+        }
+        
+        document.getElementById('next-btn').style.display = "block";
+    }
+</script>
+
+</body>
+</html>
